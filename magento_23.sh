@@ -1,24 +1,8 @@
 #!/bin/bash
 
 # USAGE INSTRUCTIONS
-# Run the script on a fresh UBUNTU 20 installation
-# After the script runs, edit the apache configs to allow Overide
-# 
-# sudo vim /etc/apache2/apache2.conf
-# 
-# Locate this section
-# <Directory /var/www/>
-#         Options Indexes FollowSymLinks
-#         AllowOverride None
-#         Require all granted
-# </Directory>
-# 
-# Change AllowOverride None -> AllowOverride ALL
-# <Directory /var/www/>
-#         Options Indexes FollowSymLinks
-#         AllowOverride All
-#         Require all granted
-# </Directory>
+# Run the script on a Fresh UBUNTU 20 installation
+# After the script Executes. Go to http://{your-ip-address} 
 
 readonly DB_NAME="magento"
 readonly DB_USER="mageuser"
@@ -128,17 +112,44 @@ change_file_permissions () {
 	sudo chmod -R 777 generated
 }
 
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as SUDO"
-  exit
-fi
+modify_apache_site_config () {
 
-update_packages
-install_lamp_stack
-setup_database
-install_composer
-download_magento
-install_magento
+	readonly A2_CONFIG="/etc/apache2/sites-available/000-default.conf";
+
+	echo -e "<VirtualHost *:80>" > "${A2_CONFIG}"
+	echo -e "" >> "${A2_CONFIG}"
+	echo -e "\tServerAdmin webmaster@localhost" >> "${A2_CONFIG}"
+	echo -e "\tDocumentRoot /var/www/html/magento2/pub" >> "${A2_CONFIG}"
+	echo -e "" >> "${A2_CONFIG}"
+	echo -e "\tErrorLog ${APACHE_LOG_DIR}/error.log" >> "${A2_CONFIG}"
+	echo -e "\tCustomLog ${APACHE_LOG_DIR}/access.log combined" >> "${A2_CONFIG}"
+	echo -e "" >> "${A2_CONFIG}"
+	echo -e "\t<Directory \"/var/www/html\">" >> "${A2_CONFIG}"
+	echo -e "\t\tAllowOverride all" >> "${A2_CONFIG}"
+	echo -e "\t</Directory>" >> "${A2_CONFIG}"
+	echo -e "</VirtualHost>" >> "${A2_CONFIG}"
+
+	sudo service apache2 restart
+}
+
+main () {
+	if [ "$EUID" -ne 0 ]
+	  then echo "Please run as SUDO"
+	  exit
+	fi
+
+	update_packages
+	install_lamp_stack
+	setup_database
+	install_composer
+	download_magento
+	install_magento
+
+	echo "ALL IS DONE";
+}
+
+main
+
+exit 0
 
 
-echo "ALL IS DONE\n";
