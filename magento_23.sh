@@ -119,7 +119,7 @@ modify_apache_site_config () {
 	echo -e "<VirtualHost *:80>" > "${A2_CONFIG}"
 	echo -e "" >> "${A2_CONFIG}"
 	echo -e "\tServerAdmin webmaster@localhost" >> "${A2_CONFIG}"
-	echo -e "\tDocumentRoot /var/www/html/magento2/pub" >> "${A2_CONFIG}"
+	echo -e "\tDocumentRoot /var/www/html/magento2" >> "${A2_CONFIG}"
 	echo -e "" >> "${A2_CONFIG}"
 	echo -e "\tErrorLog ${APACHE_LOG_DIR}/error.log" >> "${A2_CONFIG}"
 	echo -e "\tCustomLog ${APACHE_LOG_DIR}/access.log combined" >> "${A2_CONFIG}"
@@ -144,6 +144,7 @@ main () {
 	install_composer
 	download_magento
 	install_magento
+	modify_apache_site_config
 
 	echo "ALL IS DONE";
 }
